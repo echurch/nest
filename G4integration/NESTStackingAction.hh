@@ -12,7 +12,7 @@
 
 class NESTStackingAction : public G4UserStackingAction {
  public:
-  NESTStackingAction();
+  NESTStackingAction() ;
   virtual ~NESTStackingAction();
   static G4StackManager* savedManager;
   static NESTStackingAction* theStackingAction;
@@ -23,6 +23,8 @@ class NESTStackingAction : public G4UserStackingAction {
   virtual void NewStage();
 
  private:
+  //  std::vector<uint> counter = {0,0,0,0};
+  G4int cnt;
 };
 
 #endif

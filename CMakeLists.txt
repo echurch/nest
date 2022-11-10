@@ -61,7 +61,7 @@ set(NEST_CORE_HEADERS
   ${CMAKE_CURRENT_SOURCE_DIR}/include/NEST/ValidityTests.hh
 )
 
-add_library(NESTCore ${NEST_CORE_SOURCES} ${NEST_CORE_HEADERS})
+add_library(NESTCore SHARED ${NEST_CORE_SOURCES} ${NEST_CORE_HEADERS})
 add_library(NEST::Core ALIAS NESTCore)
 
 target_link_libraries(NESTCore PUBLIC gcem)

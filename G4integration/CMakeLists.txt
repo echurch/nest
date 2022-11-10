@@ -11,7 +11,7 @@ set(NEST_G4_HEADERS
 )
 
 add_library(
-    NESTG4
+    NESTG4 SHARED
     ${NEST_G4_SOURCES}
     ${NEST_G4_HEADERS}
 )

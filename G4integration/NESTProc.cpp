@@ -58,9 +58,9 @@ NESTProc::NESTProc(const G4String& processName, G4ProcessType type,
   pParticleChange = &fParticleChange;
   SetProcessSubType(fScintillation);
 
-  if (verboseLevel > 0) {
-    G4cout << GetProcessName() << " is created " << G4endl;
-  }
+  //  if (verboseLevel > 0) {
+    G4cout << GetProcessName() << " is created " << G4endl; 
+    //  }
 }
 
 NESTProc::~NESTProc() {}  // destructor needed to avoid linker error
@@ -131,6 +131,7 @@ void NESTProc::TryPopLineages(const G4Track& aTrack, const G4Step& aStep) {
               ->xyz;
       double efield_here =
           fDetector->FitEF(maxHit_xyz.x(), maxHit_xyz.y(), maxHit_xyz.z());
+      //      std::cout << "NESTProc::TryPopLineages() calling NESTcalc::FullCalculation() here. Type is " << lineage.type << std::endl;
       lineage.result = fNESTcalc->FullCalculation(
           lineage.type, etot, lineage.density, efield_here, lineage.A,
           lineage.Z, NESTcalc::default_NuisParam, NESTcalc::default_FreeParam,

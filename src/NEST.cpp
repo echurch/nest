@@ -34,7 +34,9 @@ NESTresult NESTcalc::FullCalculation(
     bool do_times /*=true*/) {
   if (density < 1.) fdetector->set_inGas(true);
   NESTresult result;
+  //  std::cout << "NESTcalc::FullCalculation() species desired is " << species << std::endl;
   result.yields = GetYields(species, energy, density, dfield, A, Z, NuisParam);
+  std::cout << "NESTcalc::FullCalculation() Nph, Nel: " << result.yields.PhotonYield << ", " << result.yields.ElectronYield << std::endl;  
   result.quanta = GetQuanta(result.yields, density, FreeParam);
   if (do_times)
     result.photon_times = GetPhotonTimes(
@@ -441,7 +443,8 @@ YieldResult NESTcalc::GetYieldERWeighted(double energy, double density,
 
   const std::vector<double> EnergyParams = {0.23, 0.77, 2.95, -1.44};
   const std::vector<double> FieldParams = {421.15, 3.27};
-  YieldResult yieldsB = GetYieldBetaGR(energy, density, dfield, NuisParam);
+  //  YieldResult yieldsB = GetYieldBetaGR(energy, density, dfield, NuisParam);
+  YieldResult yieldsB = GetYieldBeta(energy, density, dfield);  // ECm 1-June-2021 per Matthew's advice for GXe
   YieldResult yieldsG = GetYieldGamma(energy, density, dfield);
   double weightG =
       EnergyParams[0] +
@@ -559,9 +562,13 @@ NESTresult NESTcalc::GetYieldERdEOdxBasis(const std::vector<double> &NuisParam,
 	yields.ElectricField = field; yields.DeltaT_Scint = -999; result.yields = yields;
       }
       else
-	result.yields = GetYieldBetaGR(eStep, rho, field, NuisParam);
+	//	result.yields = GetYieldBetaGR(eStep, rho, field, NuisParam);
+	result.yields = GetYieldBeta(eStep, rho, field);  // ECm 1-June-2021 per Matthew's advice for GXe
+
     } else
-      result.yields = GetYieldBetaGR(refEnergy, rho, field, NuisParam);
+      //      result.yields = GetYieldBetaGR(refEnergy, rho, field, NuisParam);
+      result.yields = GetYieldBeta(eStep, rho, field);  // ECm 1-June-2021 per Matthew's advice for GXe      
+
     if ( eMin < 0. && FreeParam[0] < 0. ) {
       QuantaResult quanta{};
       if ( Nq_mean < 1. ) Nq = 0;
@@ -584,6 +591,7 @@ NESTresult NESTcalc::GetYieldERdEOdxBasis(const std::vector<double> &NuisParam,
       if ( FreeParam[0] >= 0. ) {
 	Nq = result.quanta.photons + result.quanta.electrons;
 	double FanoOverall = 0.0015 * sqrt((-1e3*eMin/Wq_eV)*field);
+	
 	double FanoScint = 20. * FanoOverall;
 	Nq = int(floor(RandomGen::rndm()->rand_gauss(Nq,sqrt(FanoOverall*Nq),false)+0.5));
 	result.quanta.photons = int(floor(RandomGen::rndm()->rand_gauss(
@@ -1032,14 +1040,18 @@ YieldResult NESTcalc::GetYieldBeta(double energy, double density,
          Wq_eV;  //( Wq_eV+(12.578-Wq_eV)/(1.+pow(energy/1.6,3.5)) );
     double LET_power = -2.;
     if (fdetector->get_inGas()) LET_power = 2.;
+
     double QyLvlhighE = 28.;
     if (density > 3.100) QyLvlhighE = 49.;  // SXe effect from Yoo.
     Qy = QyLvlmedE +
          (QyLvllowE - QyLvlmedE) /
              pow(1. + 1.304 * pow(energy, 2.1393), 0.35535) +
          QyLvlhighE / (1. + DokeBirks * pow(energy, LET_power));
+
+    std::cout << "NESTcalc::GetYieldBeta() dfield, energy, Nq, Qy, Ne " << dfield << ", " << energy << ", " << Nq << ", " << Qy << ", " << Qy*energy << std::endl;    
     if (Qy > QyLvllowE && energy > 1. && dfield > 1e4) Qy = QyLvllowE;
   }
+
 
   if (!fdetector->get_OldW13eV()) Qy *= ZurichEXOQ;
   double Ly = Nq / energy - Qy;
@@ -1049,6 +1061,9 @@ YieldResult NESTcalc::GetYieldBeta(double energy, double density,
   YieldResult result{};
   result.PhotonYield = Nph;
   result.ElectronYield = Ne;
+  //  std::cout << "NEST::GetYieldBeta(): pegging phot/elecs to 200/350"  << std::endl;
+  //  result.PhotonYield = 200;
+  //  result.ElectronYield = 350;
   result.ExcitonRatio = NexONi(energy, density);
   result.Lindhard = 1;
   result.ElectricField = dfield;
@@ -1125,6 +1140,7 @@ YieldResult NESTcalc::GetYields(
     const std::vector<double> &NuisParam
     /*={11.,1.1,0.0480,-0.0533,12.6,0.3,2.,0.3,2.,0.5,1.,1.}*/,
     bool oldModelER) {
+
   switch (species) {
     case NR:
     case WIMP:
@@ -1159,7 +1175,9 @@ YieldResult NESTcalc::GetYields(
       if (ValidityTests::nearlyEqual(ATOM_NUM, 18.) || oldModelER)
         return GetYieldBeta(energy, density, dfield);  // OLD
       else
-        return GetYieldBetaGR(energy, density, dfield, NuisParam);  // NEW
+	//  return GetYieldBetaGR(energy, density, dfield, NuisParam);  // NEW
+	return GetYieldBeta(energy, density, dfield);  // EC 1-June-2021 per Matthew's advice for GXe
+	
       break;
   }
 }
