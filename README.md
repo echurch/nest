@@ -1,5 +1,9 @@
 # nest
 
+[Eric C's version with .so's and rando other little things, like couts added.
+]
+
+
 Noble Element Simulation Technique (nest) is used to simulate noble-element energy deposition microphysics.
 
 [![Build Status](https://www.travis-ci.com/NESTCollaboration/nest.svg?branch=master)](https://www.travis-ci.com/NESTCollaboration/nest)
